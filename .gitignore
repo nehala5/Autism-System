@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+
+# Environment / Secrets (CRITICAL)
+.env
+backend/.env
+
+# Databases
+*.db
+*.sqlite3
+backend/data/*.db
+
+# Local Uploads (S3 will handle this in cloud)
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+backend/data/reports/*
+!backend/data/reports/.gitkeep
+
+# OS/IDE
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Diary - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.1">
+</head>
+<body>
+    <header><h1>Memory Diary</h1></header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+
+    <div class="container" style="max-width: 800px;">
+        <div class="kids-card theme-pink" style="cursor: default; text-align: left; align-items: flex-start;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span class="icon" style="font-size: 50px; margin: 0;">📖</span>
+                <h2 style="margin: 0; font-size: 2rem;">New Memory</h2>
+            </div>
+            <p style="text-align: left; margin-bottom: 20px;">Write down a happy memory or something fun you did today!</p>
+            <input type="text" id="diary-title" placeholder="Memory Title (e.g., Fun at the Park!)" style="margin-bottom: 15px;">
+            <textarea id="diary-message" placeholder="What happened today? Tell your story..." style="min-height: 120px; margin-bottom: 15px;"></textarea>
+            <div style="width: 100%; margin-bottom: 20px;">
+                <label style="font-weight: 800; display: block; margin-bottom: 5px; color: #4e342e;">Add a Photo (optional):</label>
+                <input type="file" id="diary-upload" accept="image/*" style="padding: 10px; border-style: dashed;">
+            </div>
+            <button onclick="saveDiary()" class="btn-kids">✨ Save to My Timeline ✨</button>
+        </div>
+        <div style="margin: 50px 0 30px; text-align: center;">
+            <h2 style="font-size: 2.5rem; color: #4e342e; text-shadow: 2px 2px 0 white;">🌈 My Timeline</h2>
+            <div style="width: 100px; height: 6px; background: var(--secondary); margin: 10px auto; border-radius: 3px;"></div>
+        </div>
+        <div id="diary-timeline"></div>
+    </div>
+    <script src="/static/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) window.location.href = '/login';
+            loadDiary();
+        });
+    </script>
+</body>
+</html>

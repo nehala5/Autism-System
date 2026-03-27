@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ game_name }} - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.2">
+    <style>
+        .memory-card {
+            aspect-ratio: 1/1;
+            min-width: 100px;
+            min-height: 100px;
+            border-radius: 25px !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            font-size: 50px !important;
+        }
+        
+        #game-area {
+            border-top: 15px solid var(--primary);
+            text-align: center;
+        }
+        
+        #current-game-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="bounce">{{ game_name }}</h1>
+        <p>You're doing great! Keep going! 🌟</p>
+    </header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+
+    <div class="container">
+        <div id="game-area" class="card">
+            <h2 id="current-game-title">{{ game_name }}</h2>
+            <div id="game-container" style="min-height: 450px; padding: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div id="loading-fallback" style="text-align:center;">
+                    <p>Loading your fun game...</p>
+                    <button onclick="forceStart()" class="btn-blue" style="margin-top:10px;">Click here if it stays blank</button>
+                </div>
+            </div>
+            <div id="game-controls" class="hidden" style="margin-top: 30px;">
+                <div style="background: var(--bg); padding: 15px 30px; border-radius: 40px; display: inline-block; margin-bottom: 20px; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                    <span style="font-size: 1.5rem; font-weight: 800;">Score: <span id="game-score" style="color: var(--primary);">0</span></span>
+                </div>
+                <br>
+                <button onclick="restartGame()" class="btn-blue">Restart</button>
+                <button onclick="finishGame()" class="btn-green">Finish & Save</button>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="closeGame()" class="cute-btn btn-pink" id="close-game-btn" style="display:inline-flex; margin: 0 auto; cursor:pointer;"><span>🔙</span> Back to Activities</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/script.js?v=1.7"></script>
+    <script>
+        const RAW_GAME_NAME = "{{ game_name }}";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            if (!selectedChildId) {
+                alert("Please select a child profile first!");
+                window.location.href = '/children';
+                return;
+            }
+            
+            forceStart();
+        });
+
+        function forceStart() {
+            const decoded = decodeURIComponent(RAW_GAME_NAME);
+            console.log("Forcing start for:", decoded);
+            if (typeof startGame === 'function') {
+                startGame(decoded);
+            } else {
+                console.error("startGame function not found!");
+            }
+        }
+
+        window.closeGame = function() {
+            window.location.href = '/activities';
+        };
+
+        // Standardized checkShape for the new UI
+        window.checkShape = function(selected, target) {
+            const feedback = document.getElementById('feedback');
+            if (selected === target) {
+                if (feedback) {
+                    feedback.innerText = "Fantastic! 🌟";
+                    feedback.style.color = "var(--success)";
+                }
+                gameScore += 10;
+                document.getElementById('game-score').innerText = gameScore;
+                setTimeout(() => {
+                    const container = document.getElementById('game-container');
+                    if (container) startShapeMatch(container);
+                }, 1000);
+            } else {
+                if (feedback) {
+                    feedback.innerText = "Not that one. Try again! 🤔";
+                    feedback.style.color = "var(--danger)";
+                }
+            }
+        };
+    </script>
+</body>
+</html>

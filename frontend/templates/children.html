@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Child - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.1">
+    <style>
+        .child-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .child-info h3 { margin: 0; color: var(--primary); }
+        .child-actions { display: flex; gap: 10px; }
+        .btn-delete {
+            background: #e74c3c;
+            box-shadow: 0 4px 0 #c0392b;
+        }
+        .btn-select {
+            background: #2ecc71;
+            box-shadow: 0 4px 0 #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Manage Children</h1>
+        <p>Add, select, or remove child profiles</p>
+    </header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card theme-orange">
+                <h3>➕ Add New Child</h3>
+                <input type="text" id="child-name" placeholder="Child's Name" style="background: white;">
+                <input type="number" id="child-age" placeholder="Child's Age" style="background: white;">
+                
+                <div style="margin-top: 15px; text-align: left;">
+                    <label style="font-weight: bold; font-size: 0.9rem;">Autism Traits/History in Family?</label>
+                    <select id="child-autism-inheritance" style="background: white; margin-top: 5px;">
+                        <option value="none">No known history</option>
+                        <option value="immediate">Immediate family (parents/siblings)</option>
+                        <option value="extended">Extended family (cousins/grandparents)</option>
+                        <option value="suspected">Suspected traits (not diagnosed)</option>
+                    </select>
+                </div>
+
+                <div style="margin-top: 15px; text-align: left;">
+                    <label style="font-weight: bold; font-size: 0.9rem;">Sensory Sensitivity Level?</label>
+                    <select id="child-sensory-level" style="background: white; margin-top: 5px;">
+                        <option value="low">Low (Needs more stimulation)</option>
+                        <option value="standard" selected>Standard (Balanced)</option>
+                        <option value="high">High (Needs calm environment)</option>
+                    </select>
+                </div>
+
+                <button onclick="addChild()" style="width:100%; margin-top: 20px;">Add Profile</button>
+            </div>
+
+            <div class="card theme-blue">
+                <h3>👶 Your Children</h3>
+                <div id="child-list">
+                    <!-- Loaded via JS -->
+                    <p>Loading children...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) window.location.href = '/login';
+            else loadChildren();
+        });
+    </script>
+</body>
+</html>

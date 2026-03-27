@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.1">
+    <style>
+        .quiz-option {
+            font-size: 1.2rem;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .quiz-option:hover {
+            transform: scale(1.05);
+            background: #f8f9fa;
+        }
+        .quiz-option span {
+            font-size: 50px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz Time!</h1>
+        <p id="age-level-indicator" style="font-weight: bold; color: var(--primary); text-align: center; margin-top: -10px; font-size: 1.2rem;"></p>
+    </header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+    <div class="container" style="max-width: 1200px;">
+        <div id="quiz-selection" class="grid-kids">
+            <!-- Level 1 Quizzes (Visible to all) -->
+            <div class="kids-card theme-green age-level-1 age-level-2 age-level-3" onclick="startNewQuiz('Daily Routine')">
+                <span class="icon">☀️</span>
+                <h3>Daily Routine</h3>
+                <p>What comes next in our daily schedule?</p>
+                <button class="btn-kids">Start Quiz</button>
+            </div>
+
+            <!-- Level 2 Quizzes (Visible to Level 2 & 3) -->
+            <div class="kids-card theme-blue age-level-2 age-level-3" onclick="startNewQuiz('Social Skills')">
+                <span class="icon">🤝</span>
+                <h3>Social Skills</h3>
+                <p>What should we do in different social situations?</p>
+                <button class="btn-kids">Start Quiz</button>
+            </div>
+
+            <div class="kids-card theme-orange age-level-2 age-level-3" onclick="startNewQuiz('Safety & Help')">
+                <span class="icon">🆘</span>
+                <h3>Safety & Help</h3>
+                <p>Learn who to ask for help and stay safe.</p>
+                <button class="btn-kids">Start Quiz</button>
+            </div>
+
+            <!-- Level 3 Quizzes (Visible to Level 3) -->
+            <div class="kids-card theme-purple age-level-3" onclick="startNewQuiz('Advanced Social Skills')">
+                <span class="icon">🧠</span>
+                <h3>Advanced Logic</h3>
+                <p>Understand complex emotions and social cues.</p>
+                <button class="btn-kids">Start Quiz</button>
+            </div>
+        </div>
+
+        <div id="quiz-area" class="card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="current-quiz-name"></h2>
+                <span id="question-counter" style="font-weight: bold; color: var(--primary);"></span>
+            </div>
+            
+            <div class="progress-bar"><div id="progress-fill"></div></div>
+
+            <div id="quiz-content">
+                <p id="quiz-question-text" style="font-size: 24px; text-align: center; margin-bottom: 30px; font-weight: 500;"></p>
+                <div id="quiz-options-grid" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+
+            <div id="quiz-results" class="hidden" style="text-align: center; padding: 20px;">
+                <h2 style="font-size: 40px;">Great Job! 🎉</h2>
+                <p id="final-score-text" style="font-size: 24px; margin: 20px 0;"></p>
+                <button onclick="location.reload()" class="btn-blue">Back to Quizzes</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!token) window.location.href = '/login';
+            await syncChildAge();
+            filterQuizzesByAge();
+        });
+
+        function filterQuizzesByAge() {
+            const ageStr = localStorage.getItem('selectedChildAge');
+            const age = ageStr ? parseInt(ageStr) : 0;
+            const indicator = document.getElementById('age-level-indicator');
+            
+            const levelInfo = getLevelInfo(age);
+            if (indicator) indicator.innerText = levelInfo.name;
+
+            document.querySelectorAll('.kids-card').forEach(card => {
+                if (card.classList.contains(`age-level-${levelInfo.level}`)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

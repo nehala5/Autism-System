@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Learning - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.1">
+    <style>
+        .learning-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        
+        .feature-panel {
+            background: #fffdf5;
+            border: 4px solid #4e342e;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 10px 10px 0px rgba(78, 52, 46, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .panel-header {
+            background: var(--secondary);
+            padding: 20px;
+            border-bottom: 4px solid #4e342e;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #4e342e;
+        }
+
+        .panel-content {
+            padding: 25px;
+        }
+
+        .instruction-tag {
+            display: inline-block;
+            background: #fdfae6;
+            color: #8d6e63;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            border: 2px solid #eaddcf;
+        }
+
+        .camera-container-v2 {
+            background: #fdfaf0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 4px solid #d6c6a2;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-overlay {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            padding: 10px 25px;
+            border: 3px solid #d6c6a2 !important;
+            border-radius: 40px;
+            background: white;
+            color: #4e342e;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .camera-controls-v3 {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .btn-light-action {
+            background: white !important;
+            color: #4e342e !important;
+            border: 3px solid #d6c6a2 !important;
+            box-shadow: 0 5px 0 #d6c6a2 !important;
+            min-width: 130px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-light-action:hover {
+            background: #fdfaf0 !important;
+        }
+
+        .btn-light-action:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #d6c6a2 !important;
+        }
+
+        .upload-zone {
+            border: 3px dashed #d6c6a2;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px;
+            background: #fffcf5;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-zone:hover {
+            background: #fdf8eb;
+            border-color: #8d6e63;
+        }
+
+        .training-section {
+            grid-column: span 2;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 950px) {
+            .learning-grid { grid-template-columns: 1fr; }
+            .training-section { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Emotion Learning</h1>
+        <p>Explore and recognize emotions with AI assistance! 🌟</p>
+    </header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+
+    <div class="container" style="max-width: 1200px;">
+        <div class="learning-grid">
+            
+            <!-- Left Panel: Live Scan -->
+            <div class="feature-panel">
+                <div class="panel-header">
+                    <span style="font-size: 2.5rem;">📸</span>
+                    <h2>Live Detection</h2>
+                </div>
+                <div class="panel-content">
+                    <span class="instruction-tag">STEP 1: SEE EMOTIONS LIVE</span>
+                    <p style="font-size: 0.95rem; margin-bottom: 20px; font-weight: 600;">Look into the lens! The AI will identify your emotions in real-time.</p>
+                    
+                    <div class="camera-container-v2">
+                        <video id="webcam" autoplay playsinline style="width: 100%; display: block;"></video>
+                        <div id="live-overlay" class="camera-overlay" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; text-align: center;">Ready...</div>
+                    </div>
+
+                    <div class="camera-controls-v3">
+                        <button onclick="startCamera()" class="btn-light-action">Activate Lens</button>
+                        <button onclick="capturePhoto()" class="btn-play" style="width: auto; margin: 0; min-width: 130px;">Snapshot</button>
+                        <button onclick="stopCamera()" class="btn-light-action">Turn Off</button>
+                    </div>
+                    <p id="live-result" style="text-align: center; font-weight: 800; margin-top: 15px; color: var(--text);"></p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Photo Analysis -->
+            <div class="feature-panel">
+                <div class="panel-header">
+                    <span style="font-size: 2.5rem;">📂</span>
+                    <h2>Photo Library</h2>
+                </div>
+                <div class="panel-content">
+                    <span class="instruction-tag">STEP 2: ANALYZE SAVED PHOTOS</span>
+                    <p style="font-size: 0.95rem; margin-bottom: 20px; font-weight: 600;">Choose a file from your device to perform a deep emotion scan.</p>
+
+                    <div class="upload-zone" onclick="document.getElementById('emotion-upload').click()">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">☁️</div>
+                        <p style="margin: 0; font-weight: 800;">Click to Upload Image</p>
+                        <input type="file" id="emotion-upload" accept="image/*" style="display: none;" onchange="handleFileSelected(this)">
+                        <p id="file-name-display" style="font-size: 0.8rem; color: var(--primary); margin-top: 10px;"></p>
+                    </div>
+                    <button onclick="uploadEmotion()" style="width: 100%; margin-top: 15px;" class="btn-play">Run Analysis</button>
+
+                    <div id="emotion-result" class="ai-feedback-card hidden" style="margin-top: 25px; border: 3px solid var(--secondary); background: #fffcf5;">
+                        <h3 style="margin-bottom: 15px; font-size: 1.4rem;">Scan Result: <span id="predicted-emotion" style="color: var(--primary);"></span></h3>
+                        <img id="result-img" style="max-width: 100%; border-radius: 15px; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        
+                        <div style="margin-top: 10px; padding-top: 15px; border-top: 2px dashed #d6c6a2; position: relative; top: -10px;">
+                            <p style="font-weight: 800; margin-bottom: 10px;">Verify Result:</p>
+                        <div style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%;">
+                            <button onclick="confirmEmotion(true)" class="btn-select" style="flex: 1; min-width: 120px; padding: 12px 10px; font-size: 0.9rem; margin: 0;">Correct ✅</button>
+                            <button onclick="confirmEmotion(false)" class="btn-delete" style="flex: 1; min-width: 120px; padding: 12px 10px; font-size: 0.9rem; margin: 0;">Wrong ❌</button>
+                        </div>
+
+                            <div id="correction-area" class="hidden" style="margin-top: 20px; text-align: left;">
+                                <label style="font-weight: 800; font-size: 0.9rem;">Select Correct Emotion:</label>
+                                <select id="corrected-emotion" onchange="toggleCustomEmotion()" style="margin-top: 5px; border-width: 3px;">
+                                    <option value="happy">Happy</option>
+                                    <option value="sad">Sad</option>
+                                    <option value="angry">Angry</option>
+                                    <option value="fear">Fear</option>
+                                    <option value="surprise">Surprise</option>
+                                    <option value="neutral">Neutral</option>
+                                    <option value="other">Other (Type new...)</option>
+                                </select>
+                                <input type="text" id="custom-emotion-name" class="hidden" placeholder="Enter emotion name">
+                                <button onclick="saveCorrection()" class="btn-play" style="margin-top: 10px; width: 100%;">Update AI Knowledge</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: Training Hub -->
+            <div class="training-section kids-card theme-orange">
+                <div style="display: flex; align-items: center; gap: 15px; justify-content: center;">
+                    <span class="icon">🧠</span>
+                    <h2 style="margin: 0; font-size: 2.2rem;">AI Brain Center</h2>
+                </div>
+                <p style="text-align: center; max-width: 700px; margin: 20px auto; font-weight: 700; font-size: 1.1rem; color: #4e342e;">
+                    Finalize your session! Click below to permanently integrate your corrections into the AI's memory.
+                </p>
+                <div style="text-align: center; margin-bottom: 10px; width: 100%;">
+                    <button onclick="trainAI()" class="btn-kids" style="width: auto; padding: 25px 60px; font-size: 1.4rem; background: #fff !important;">✨ SYNC AI BRAIN ✨</button>
+                    <p id="train-status" style="font-size: 1rem; margin-top: 20px; color: #4e342e; font-weight: 800;"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/js/script.js?v=1.8"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) window.location.href = '/login';
+            loadCustomEmotions();
+        });
+
+        function handleFileSelected(input) {
+            const display = document.getElementById('file-name-display');
+            if (input.files && input.files[0]) {
+                display.innerText = "Selected: " + input.files[0].name;
+            }
+        }
+    </script>
+</body>
+</html>

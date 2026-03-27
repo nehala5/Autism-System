@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activities - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.2">
+</head>
+<body>
+    <header>
+        <h1 id="page-title">Loading Activities...</h1>
+        <p id="age-level-indicator" style="font-weight: bold; color: var(--primary); font-size: 1.4rem; margin-top: -10px;"></p>
+        <p id="level-description"></p>
+    </header>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/emotion-learning">Emotion Learning</a>
+        <a href="/activities">Activities</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/diary">Memory Diary</a>
+        <a href="/children">Child</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+    </nav>
+
+    <div class="container" style="max-width: 1200px;">
+        <!-- The container starts empty to prevent clashing -->
+        <div id="game-selection-container" class="grid-kids">
+        </div>
+    </div>
+
+    <script src="/static/js/script.js?v=1.7"></script>
+    <script>
+        const GAME_TEMPLATES = {
+            'color-match': `
+                <div class="kids-card theme-orange" onclick="goToGame('Color Match')">
+                    <span class="icon">🎨</span>
+                    <h3>Learn Colors</h3>
+                    <p>Basic color concepts and matching!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'coloring-book': `
+                <div class="kids-card theme-pink" onclick="goToGame('Coloring Book')">
+                    <span class="icon">🖌️</span>
+                    <h3>Online Coloring</h3>
+                    <p>Creativity and motor skills!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'animal-coloring': `
+                <div class="kids-card theme-green" onclick="goToGame('Animal Coloring')">
+                    <span class="icon">🐶</span>
+                    <h3>Animal Coloring</h3>
+                    <p>Fine motor and color recognition!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'memory-game': `
+                <div class="kids-card theme-blue" onclick="goToGame('Memory Game')">
+                    <span class="icon">🧠</span>
+                    <h3>Memory Game</h3>
+                    <p>Find the pairs and the magic star!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'pattern-match': `
+                <div class="kids-card theme-blue" onclick="goToGame('Pattern Match')">
+                    <span class="icon">🧩</span>
+                    <h3>Pattern Match</h3>
+                    <p>Logical pattern challenges!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'mood-matcher': `
+                <div class="kids-card theme-purple" onclick="goToGame('Mood Matcher')">
+                    <span class="icon">🎭</span>
+                    <h3>Mood Matcher</h3>
+                    <p>Advanced emotion recognition!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'emotion-basic': `
+                <div class="kids-card theme-purple" onclick="goToGame('Learn Emotions')">
+                    <span class="icon">😊</span>
+                    <h3>Learn Emotions</h3>
+                    <p>Happy, sad, angry, and silly!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'shape-match': `
+                <div class="kids-card theme-orange" onclick="goToGame('Learn Shapes')">
+                    <span class="icon">📐</span>
+                    <h3>Learn Shapes</h3>
+                    <p>Circle, square, triangle, and star!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'alphabet-trace': `
+                <div class="kids-card theme-blue" onclick="goToGame('Alphabet Trace')">
+                    <span class="icon">📝</span>
+                    <h3>Alphabet Writing</h3>
+                    <p>Trace letters A to Z!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'number-write': `
+                <div class="kids-card theme-green" onclick="goToGame('Number Write')">
+                    <span class="icon">🔢</span>
+                    <h3>Number Writing</h3>
+                    <p>Write numbers 1 to 10!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'alphabet-memory': `
+                <div class="kids-card theme-orange" onclick="goToGame('Alphabet Memory')">
+                    <span class="icon">🔤</span>
+                    <h3>Alphabet Match</h3>
+                    <p>Match Upper and Lower case!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'word-match': `
+                <div class="kids-card theme-purple" onclick="goToGame('Word Match')">
+                    <span class="icon">🔊</span>
+                    <h3>Word Matching</h3>
+                    <p>Audio flashcard memory!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'halves-match': `
+                <div class="kids-card theme-pink" onclick="goToGame('Halves Match')">
+                    <span class="icon">🌓</span>
+                    <h3>Joining Halves</h3>
+                    <p>Complete the pictures!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'abc-sort': `
+                <div class="kids-card theme-blue" onclick="goToGame('Alphabet Sort')">
+                    <span class="icon">🔠</span>
+                    <h3>Alphabet Sort</h3>
+                    <p>Upper and lower case sorting!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'alphabet-order': `
+                <div class="kids-card theme-orange" onclick="goToGame('Alphabet Order')">
+                    <span class="icon">🔡</span>
+                    <h3>Alphabet Order</h3>
+                    <p>Put letters in A-Z order!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'missing-letter': `
+                <div class="kids-card theme-green" onclick="goToGame('Missing Letter')">
+                    <span class="icon">❓</span>
+                    <h3>Missing Letter</h3>
+                    <p>Spelling and phonics challenge!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'word-picture': `
+                <div class="kids-card theme-orange" onclick="goToGame('Word Picture Match')">
+                    <span class="icon">🖼️</span>
+                    <h3>Words & Pictures</h3>
+                    <p>Match complex words to icons!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'object-search': `
+                <div class="kids-card theme-purple" onclick="goToGame('Object Search')">
+                    <span class="icon">🔍</span>
+                    <h3>Object Search</h3>
+                    <p>Find colors and objects!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'jigsaw-puzzle': `
+                <div class="kids-card theme-pink" onclick="goToGame('Jigsaw Puzzle')">
+                    <span class="icon">🧩</span>
+                    <h3>Jigsaw Puzzle</h3>
+                    <p>Complete the picture pieces!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'spatial-puzzle': `
+                <div class="kids-card theme-pink" onclick="goToGame('Spatial Puzzle')">
+                    <span class="icon">📐</span>
+                    <h3>Spatial Reasoning</h3>
+                    <p>Match the missing pieces!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`,
+            'advanced-patterns': `
+                <div class="kids-card theme-blue" onclick="goToGame('Advanced Patterns')">
+                    <span class="icon">📈</span>
+                    <h3>Pattern Logic</h3>
+                    <p>Complex pattern completion!</p>
+                    <button class="btn-kids">Play Now</button>
+                </div>`
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("Activities page loaded");
+
+            // Check if token exists (global from script.js)
+            const activeToken = localStorage.getItem('token');
+            if (!activeToken) {
+                console.log("No token found, redirecting to login");
+                window.location.href = '/login';
+                return;
+            }
+
+            // Try to sync child data, but don't block forever
+            try {
+                if (typeof syncChildAge === 'function') {
+                    await syncChildAge();
+                } else {
+                    console.warn("syncChildAge function not found");
+                }
+            } catch (e) {
+                console.error("Error syncing child age:", e);
+            }
+
+            renderLevelSpecificContent();
+        });
+
+        function renderLevelSpecificContent() {
+            console.log("Rendering activities...");
+            const ageStr = localStorage.getItem('selectedChildAge');
+            const age = (ageStr && ageStr !== 'undefined') ? parseInt(ageStr) : 0;
+            const container = document.getElementById('game-selection-container');
+            const title = document.getElementById('page-title');
+            const indicator = document.getElementById('age-level-indicator');
+            const desc = document.getElementById('level-description');
+
+            if (!container) {
+                console.error("Game selection container not found!");
+                return;
+            }
+
+            // Clear container
+            container.innerHTML = '';
+
+            // Fallback for missing level info function
+            let levelInfo = { name: "All Levels", desc: "Fun activities for everyone!", level: 1 };
+            if (typeof getLevelInfo === 'function') {
+                levelInfo = getLevelInfo(age);
+            }
+
+            title.innerText = "Your Activities";
+
+            if (age === 0) {
+                indicator.innerText = "All Activities";
+                desc.innerText = "Try any game below to start learning!";
+
+                // Show ALL games
+                Object.values(GAME_TEMPLATES).forEach(template => {
+                    container.innerHTML += template;
+                });
+                return;
+            }
+
+            indicator.innerText = levelInfo.name;
+            desc.innerText = levelInfo.desc;
+
+            // Show recommended + other games based on age
+            if (age >= 3 && age <= 6) {
+                container.innerHTML += GAME_TEMPLATES['animal-coloring'];
+                container.innerHTML += GAME_TEMPLATES['color-match'];
+                container.innerHTML += GAME_TEMPLATES['shape-match'];
+                container.innerHTML += GAME_TEMPLATES['emotion-basic'];
+                container.innerHTML += GAME_TEMPLATES['coloring-book'];
+            }
+            else if (age >= 7 && age <= 9) {
+                container.innerHTML += GAME_TEMPLATES['alphabet-trace'];
+                container.innerHTML += GAME_TEMPLATES['number-write'];
+                container.innerHTML += GAME_TEMPLATES['alphabet-memory'];
+                container.innerHTML += GAME_TEMPLATES['word-match'];
+                container.innerHTML += GAME_TEMPLATES['halves-match'];
+                container.innerHTML += GAME_TEMPLATES['pattern-match'];
+                container.innerHTML += GAME_TEMPLATES['memory-game'];
+            }
+            else {
+                container.innerHTML += GAME_TEMPLATES['abc-sort'];
+                container.innerHTML += GAME_TEMPLATES['alphabet-order'];
+                container.innerHTML += GAME_TEMPLATES['missing-letter'];
+                container.innerHTML += GAME_TEMPLATES['word-picture'];
+                container.innerHTML += GAME_TEMPLATES['object-search'];
+                container.innerHTML += GAME_TEMPLATES['jigsaw-puzzle'];
+                container.innerHTML += GAME_TEMPLATES['spatial-puzzle'];
+                container.innerHTML += GAME_TEMPLATES['advanced-patterns'];
+                container.innerHTML += GAME_TEMPLATES['mood-matcher'];
+            }
+
+            if (container.innerHTML === '') {
+                console.warn("No activities rendered for age:", age);
+                container.innerHTML = "<h3>No specific activities found for this age. Try the games above!</h3>";
+                Object.values(GAME_TEMPLATES).forEach(template => {
+                    container.innerHTML += template;
+                });
+            }
+        }
+        function goToGame(name) {
+            window.location.href = `/game/${encodeURIComponent(name)}`;
+        }
+    </script>
+</body>
+</html>

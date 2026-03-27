@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NeuroSense</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=1.1">
+</head>
+<body>
+    <header>
+        <h1>NeuroSense</h1>
+        <p>Your child's learning journey starts here! ✨</p>
+    </header>
+
+    <div class="container" style="max-width: 500px;">
+        <div id="login-section" class="card">
+            <h2 style="text-align: center; margin-bottom: 30px;">Welcome Back! 👋</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button onclick="login()" style="width: 100%; margin-top: 20px;">Login to Dashboard</button>
+            <p style="text-align: center; margin-top: 20px; font-weight: 600;">
+                New here? <a href="#" onclick="toggleAuth(true)" style="color: var(--primary);">Create an account</a>
+            </p>
+        </div>
+
+        <div id="register-section" class="card hidden">
+            <h2 style="text-align: center; margin-bottom: 30px;">Create Account 🚀</h2>
+            <input type="text" id="reg-username" placeholder="Choose Username">
+            <input type="password" id="reg-password" placeholder="Choose Password">
+            <button onclick="register()" style="width: 100%; margin-top: 20px;">Join NeuroSense</button>
+            <p style="text-align: center; margin-top: 20px; font-weight: 600;">
+                Already have an account? <a href="#" onclick="toggleAuth(false)" style="color: var(--primary);">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
