@@ -37,9 +37,9 @@ RUN mkdir -p /app/backend/data/uploads/emotions \
     /app/backend/data/uploads/diary \
     /app/backend/data/reports
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Expose the port (Hugging Face uses 7860 by default)
+EXPOSE 7860
 
 # Run the application using uvicorn
-# We use 0.0.0.0 to allow external connections from the cloud
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# We use 0.0.0.0 and a dynamic port to work with Hugging Face/Render/AWS
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
