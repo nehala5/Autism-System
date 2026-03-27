@@ -1,4 +1,3 @@
-# Autism-System
 ---
 title: Autism System
 emoji: 🧠
