@@ -42,27 +42,27 @@ app.include_router(diary.router)
 @app.get("/")
 def home_page(request: Request):
     # Root is Dashboard
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "dashboard.html", {"request": request})
 
 @app.get("/login")
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 @app.get("/children")
 def children_page(request: Request):
-    return templates.TemplateResponse("children.html", {"request": request})
+    return templates.TemplateResponse(request, "children.html", {"request": request})
 
 @app.get("/emotion-learning")
 def emotion_page(request: Request):
-    return templates.TemplateResponse("emotion.html", {"request": request})
+    return templates.TemplateResponse(request, "emotion.html", {"request": request})
 
 @app.get("/activities")
 def activities_page(request: Request):
-    return templates.TemplateResponse("activities.html", {"request": request})
+    return templates.TemplateResponse(request, "activities.html", {"request": request})
 
 @app.get("/game/{game_name}")
 def game_page(request: Request, game_name: str):
-    return templates.TemplateResponse("game.html", {"request": request, "game_name": game_name})
+    return templates.TemplateResponse(request, "game.html", {"request": request, "game_name": game_name})
 
 @app.get("/dashboard")
 def dashboard_redirect(request: Request):
@@ -70,11 +70,11 @@ def dashboard_redirect(request: Request):
 
 @app.get("/diary")
 def diary_page(request: Request):
-    return templates.TemplateResponse("diary.html", {"request": request})
+    return templates.TemplateResponse(request, "diary.html", {"request": request})
 
 @app.get("/quiz")
 def quiz_page(request: Request):
-    return templates.TemplateResponse("quiz.html", {"request": request})
+    return templates.TemplateResponse(request, "quiz.html", {"request": request})
 
 if __name__ == "__main__":
     import uvicorn
