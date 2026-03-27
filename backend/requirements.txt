@@ -6,7 +6,6 @@ jinja2
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
-fer==22.4.0
 opencv-python
 reportlab
 python-dotenv
