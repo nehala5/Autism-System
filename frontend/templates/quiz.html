@@ -72,7 +72,7 @@
                 <button class="btn-kids">Start Quiz</button>
             </div>
 
-            <div class="kids-card theme-orange age-level-2 age-level-3" onclick="startNewQuiz('Safety & Help')">
+            <div class="kids-card theme-orange age-level-1 age-level-2 age-level-3" onclick="startNewQuiz('Safety & Help')">
                 <span class="icon">🆘</span>
                 <h3>Safety & Help</h3>
                 <p>Learn who to ask for help and stay safe.</p>
@@ -101,6 +101,7 @@
                 <div id="quiz-options-grid" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                     <!-- Options injected via JS -->
                 </div>
+                <div id="quiz-feedback" style="text-align: center; margin-top: 20px; font-size: 1.5rem; font-weight: bold; min-height: 2.5rem;"></div>
             </div>
 
             <div id="quiz-results" class="hidden" style="text-align: center; padding: 20px;">
@@ -118,16 +119,20 @@
             filterQuizzesByAge();
         });
 
-        function filterQuizzesByAge() {
+        async function filterQuizzesByAge() {
             const ageStr = localStorage.getItem('selectedChildAge');
+            const levelStr = localStorage.getItem('selectedChildLevel');
             const age = ageStr ? parseInt(ageStr) : 0;
+            const level = levelStr ? parseInt(levelStr) : 1;
+            
             const indicator = document.getElementById('age-level-indicator');
             
-            const levelInfo = getLevelInfo(age);
+            // Use the stored level for selection
+            const levelInfo = getLevelInfo({ level, age });
             if (indicator) indicator.innerText = levelInfo.name;
 
             document.querySelectorAll('.kids-card').forEach(card => {
-                if (card.classList.contains(`age-level-${levelInfo.level}`)) {
+                if (card.classList.contains(`age-level-${level}`)) {
                     card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';

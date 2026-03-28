@@ -105,6 +105,14 @@ const quizData = {
                 { text: "It was your fault! 😠", correct: false },
                 { text: "Say nothing 🤐", correct: false }
             ]
+        },
+        {
+            question: "A friend is talking, but you have something to say too. What should you do?",
+            options: [
+                { text: "Wait for them to finish, then speak 🙊", correct: true },
+                { text: "Interrupt them immediately 📢", correct: false },
+                { text: "Start talking louder 🗣️", correct: false }
+            ]
         }
     ],
     'Daily Routine': [
@@ -139,6 +147,14 @@ const quizData = {
                 { text: "On the floor 🧹", correct: false },
                 { text: "In the fridge 🧊", correct: false }
             ]
+        },
+        {
+            question: "What do we do before going to bed at night?",
+            options: [
+                { text: "Put on pajamas and read a story 📖", correct: true },
+                { text: "Go for a swim 🏊", correct: false },
+                { text: "Eat a big meal 🍕", correct: false }
+            ]
         }
     ],
     'Safety & Help': [
@@ -165,6 +181,22 @@ const quizData = {
                 { text: "Keep running 🏃", correct: false },
                 { text: "Cry all day 😭", correct: false }
             ]
+        },
+        {
+            question: "A stranger asks you to go with them. What do you do?",
+            options: [
+                { text: "Say 'NO' and run to a safe adult 🛑", correct: true },
+                { text: "Go with them 🚶", correct: false },
+                { text: "Take the candy they offer 🍬", correct: false }
+            ]
+        },
+        {
+            question: "What number should you know for emergencies?",
+            options: [
+                { text: "911 (or your local emergency number) ☎️", correct: true },
+                { text: "123 🔢", correct: false },
+                { text: "555 📞", correct: false }
+            ]
         }
     ],
     'Advanced Social Skills': [
@@ -190,6 +222,22 @@ const quizData = {
                 { text: "Wait for a break and ask 'Can I play too?' 🤝", correct: true },
                 { text: "Jump into the middle of the game 🏃", correct: false },
                 { text: "Take the ball away ⚽", correct: false }
+            ]
+        },
+        {
+            question: "You see someone sitting alone at recess. What could you do?",
+            options: [
+                { text: "Ask if they want to play with you 🤝", correct: true },
+                { text: "Ignore them 🙈", correct: false },
+                { text: "Point and laugh ☝️", correct: false }
+            ]
+        },
+        {
+            question: "If your friend wins a game and you lose, what should you say?",
+            options: [
+                { text: "Good game! You did well! 👏", correct: true },
+                { text: "I hate this game! 😠", correct: false },
+                { text: "You cheated! 😤", correct: false }
             ]
         }
     ]
@@ -1654,45 +1702,74 @@ function loadQuizQuestion() {
     document.getElementById('quiz-question-text').innerText = q.question;
     const progress = (currentQuestionIndex / questions.length) * 100;
     document.getElementById('progress-fill').style.width = `${progress}%`;
+    
+    // Reset feedback
+    const feedback = document.getElementById('quiz-feedback');
+    if (feedback) feedback.innerText = "";
+
     const optionsGrid = document.getElementById('quiz-options-grid');
     optionsGrid.innerHTML = '';
     q.options.forEach(opt => {
         const div = document.createElement('div');
         div.className = 'card quiz-option';
         div.innerHTML = `<span>${opt.text.split(' ').pop()}</span><p>${opt.text.split(' ').slice(0, -1).join(' ')}</p>`;
-        div.onclick = () => window.selectQuizOption(opt.correct);
+        div.onclick = () => window.selectQuizOption(opt.correct, div);
         optionsGrid.appendChild(div);
     });
 }
 
-window.selectQuizOption = function(isCorrect) {
+window.selectQuizOption = function(isCorrect, element) {
+    const feedback = document.getElementById('quiz-feedback');
     if (isCorrect) {
         quizScore++;
-        alert("Correct! Great thinking! 🌟");
+        if (feedback) {
+            feedback.innerText = "Correct! Great thinking! 🌟";
+            feedback.style.color = "var(--success)";
+        }
+        element.style.borderColor = "var(--success)";
+        element.style.background = "#e8f5e9";
+        
+        // Disable all options during the transition
+        document.querySelectorAll('.quiz-option').forEach(opt => opt.onclick = null);
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData[currentQuizType].length) {
+                loadQuizQuestion();
+            } else {
+                finishQuiz();
+            }
+        }, 1500);
     } else {
-        alert("Not quite. Let's try to remember for next time! 👍");
+        if (feedback) {
+            feedback.innerText = "Not quite. Let's try again! 👍";
+            feedback.style.color = "#e74c3c";
+        }
+        element.style.borderColor = "#e74c3c";
+        element.style.opacity = "0.7";
+        // Do NOT increment index, allowing retry
     }
-    currentQuestionIndex++;
-    if (currentQuestionIndex < quizData[currentQuizType].length) loadQuizQuestion();
-    else finishQuiz();
 };
 
 async function finishQuiz() {
     const total = quizData[currentQuizType].length;
+    // Every question was eventually answered correctly
+    const finalScore = total; 
+
     await fetch('/activities/log-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             child_id: selectedChildId,
             quiz_name: currentQuizType,
-            score: quizScore,
+            score: finalScore,
             total_questions: total
         })
     });
     document.getElementById('progress-fill').style.width = `100%`;
     document.getElementById('quiz-content').classList.add('hidden');
     document.getElementById('quiz-results').classList.remove('hidden');
-    document.getElementById('final-score-text').innerText = `You got ${quizScore} out of ${total} correct!`;
+    document.getElementById('final-score-text').innerText = `Amazing! You completed all ${total} questions! 🎉`;
 }
 
 async function loadChildrenForDashboard() {
@@ -1710,7 +1787,13 @@ async function loadChildrenForDashboard() {
 }
 
 function getLevelInfo(child) {
-    const level = child.level || 1;
+    let level = 1;
+    if (typeof child === 'number') {
+        level = child;
+    } else if (child && typeof child === 'object') {
+        level = child.level || 1;
+    }
+    
     if (level === 3) return { level: 3, name: "Level 3: Advanced (10+ or High-Risk)", desc: "Complex emotions and mood analysis.", theme: "purple" };
     if (level === 2) return { level: 2, name: "Level 2: Intermediate (7-9 or History)", desc: "Patterns and alphabetical logic.", theme: "sand" };
     return { level: 1, name: "Level 1: Basic (3-6)", desc: "Colors, shapes, and basic emotions.", theme: "orange" };
