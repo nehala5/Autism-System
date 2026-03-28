@@ -89,6 +89,22 @@ const quizData = {
                 { text: "Grab it quickly! 🖐️", correct: false },
                 { text: "Yell at them 📢", correct: false }
             ]
+        },
+        {
+            question: "Someone says 'Hello' to you. What is a nice way to respond?",
+            options: [
+                { text: "Smile and say 'Hi'! 👋", correct: true },
+                { text: "Look at the floor ⬇️", correct: false },
+                { text: "Walk away 🚶", correct: false }
+            ]
+        },
+        {
+            question: "You accidentally bumped into a friend. What do you say?",
+            options: [
+                { text: "I'm sorry! 🙊", correct: true },
+                { text: "It was your fault! 😠", correct: false },
+                { text: "Say nothing 🤐", correct: false }
+            ]
         }
     ],
     'Daily Routine': [
@@ -98,6 +114,82 @@ const quizData = {
                 { text: "Brush your teeth 🪥", correct: true },
                 { text: "Go to school 🏫", correct: false },
                 { text: "Eat breakfast 🥣", correct: false }
+            ]
+        },
+        {
+            question: "What should you do right after you wake up in the morning?",
+            options: [
+                { text: "Wash your face and get dressed ☀️", correct: true },
+                { text: "Go to sleep 😴", correct: false },
+                { text: "Eat dinner 🍽️", correct: false }
+            ]
+        },
+        {
+            question: "What is the first thing you do before eating your lunch?",
+            options: [
+                { text: "Wash your hands 🧼", correct: true },
+                { text: "Run outside 🌳", correct: false },
+                { text: "Start singing 🎤", correct: false }
+            ]
+        },
+        {
+            question: "Where do your toys go when you are finished playing?",
+            options: [
+                { text: "In the toy box 📦", correct: true },
+                { text: "On the floor 🧹", correct: false },
+                { text: "In the fridge 🧊", correct: false }
+            ]
+        }
+    ],
+    'Safety & Help': [
+        {
+            question: "If you feel lost in a big store, who should you look for?",
+            options: [
+                { text: "A store worker in a uniform 👮", correct: true },
+                { text: "A stranger 👤", correct: false },
+                { text: "Run outside 🏃", correct: false }
+            ]
+        },
+        {
+            question: "What should you do if you see something hot on the stove?",
+            options: [
+                { text: "Stay away and tell a grown-up 🚫", correct: true },
+                { text: "Touch it 🖐️", correct: false },
+                { text: "Blow on it 🌬️", correct: false }
+            ]
+        },
+        {
+            question: "If you get a small scrape on your knee, what should you do?",
+            options: [
+                { text: "Tell a teacher or parent 🩹", correct: true },
+                { text: "Keep running 🏃", correct: false },
+                { text: "Cry all day 😭", correct: false }
+            ]
+        }
+    ],
+    'Advanced Social Skills': [
+        {
+            question: "Your friend is building a tower and it keeps falling. How might they feel?",
+            options: [
+                { text: "Frustrated or annoyed 😠", correct: true },
+                { text: "Excited 🤩", correct: false },
+                { text: "Sleepy 😴", correct: false }
+            ]
+        },
+        {
+            question: "A friend is talking about their favorite cat. What is a good thing to do?",
+            options: [
+                { text: "Listen and ask 'What is your cat's name?' 🐱", correct: true },
+                { text: "Start talking about your dog 🐶", correct: false },
+                { text: "Walk away 🚶", correct: false }
+            ]
+        },
+        {
+            question: "You want to play a game with a group. How can you join in?",
+            options: [
+                { text: "Wait for a break and ask 'Can I play too?' 🤝", correct: true },
+                { text: "Jump into the middle of the game 🏃", correct: false },
+                { text: "Take the ball away ⚽", correct: false }
             ]
         }
     ]
