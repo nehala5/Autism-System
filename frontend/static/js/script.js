@@ -265,10 +265,10 @@ async function loadChildren() {
         div.innerHTML = `
             <div class="child-info">
                 <h3>${c.name}</h3>
-                <p>Age: ${c.age} | Sensory: ${c.sensory_level}</p>
+                <p>Age: ${c.age} | Level: ${c.level || 1} | Sensory: ${c.sensory_level}</p>
             </div>
             <div class="child-actions">
-                <button class="btn-select" onclick="window.selectChild(${c.id}, '${c.name}', ${c.age}, '${c.sensory_level}')">Select</button>
+                <button class="btn-select" onclick="window.selectChild(${c.id}, '${c.name}', ${c.age}, '${c.sensory_level}', ${c.level || 1})">Select</button>
                 <button class="btn-delete" onclick="window.deleteChild(${c.id})">Delete</button>
             </div>
         `;
@@ -285,6 +285,7 @@ async function deleteChild(id) {
             localStorage.removeItem('selectedChildId');
             localStorage.removeItem('selectedChildAge');
             localStorage.removeItem('selectedChildSensory');
+            localStorage.removeItem('selectedChildLevel');
             selectedChildId = null;
         }
         loadChildren();
@@ -294,14 +295,15 @@ async function deleteChild(id) {
     }
 }
 
-function selectChild(id, name, age, sensory) {
+function selectChild(id, name, age, sensory, level) {
     localStorage.setItem('selectedChildId', id);
     localStorage.setItem('selectedChildAge', age);
     localStorage.setItem('selectedChildSensory', sensory);
+    localStorage.setItem('selectedChildLevel', level || 1);
     selectedChildId = id;
-    alert(`Child profile selected: ${name} (Age: ${age})`);
+    alert(`Child profile selected: ${name} (Age: ${age}, Level: ${level || 1})`);
     applySensoryUI(sensory);
-    applyLevelUI(age);
+    applyLevelUI(age); // Note: age still used for some legacy UI logic if any
     window.location.href = '/dashboard';
 }
 
@@ -1615,10 +1617,11 @@ async function loadChildrenForDashboard() {
     if (selectedChildId) loadProgress();
 }
 
-function getLevelInfo(age) {
-    if (age >= 10) return { level: 3, name: "Level 3: Advanced (Ages 10+)", desc: "Mood analysis and emotional intelligence.", theme: "purple" };
-    if (age >= 7) return { level: 2, name: "Level 2: Intermediate (Ages 7-9)", desc: "Patterns and logical puzzles.", theme: "sand" };
-    return { level: 1, name: "Level 1: Basic (Ages 3-6)", desc: "Colors and creative expression.", theme: "orange" };
+function getLevelInfo(child) {
+    const level = child.level || 1;
+    if (level === 3) return { level: 3, name: "Level 3: Advanced (10+ or High-Risk)", desc: "Complex emotions and mood analysis.", theme: "purple" };
+    if (level === 2) return { level: 2, name: "Level 2: Intermediate (7-9 or History)", desc: "Patterns and alphabetical logic.", theme: "sand" };
+    return { level: 1, name: "Level 1: Basic (3-6)", desc: "Colors, shapes, and basic emotions.", theme: "orange" };
 }
 
 async function syncChildAge() {
@@ -1647,7 +1650,8 @@ async function loadProgress() {
     const child = children.find(c => c.id == childId);
     if (child) {
         localStorage.setItem('selectedChildAge', child.age);
-        const levelInfo = getLevelInfo(child.age);
+        localStorage.setItem('selectedChildLevel', child.level || 1);
+        const levelInfo = getLevelInfo(child);
         const levelDisplay = document.getElementById('dashboard-level-display');
         if (levelDisplay) {
             levelDisplay.innerHTML = `

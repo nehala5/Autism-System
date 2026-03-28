@@ -1,7 +1,22 @@
 import os
-# Ensure Keras backend is torch if not already set (important for Python 3.14)
-if "KERAS_BACKEND" not in os.environ:
-    os.environ["KERAS_BACKEND"] = "torch"
+import sys
+from types import ModuleType
+
+# Ensure Keras backend is torch (important for Python 3.14/Keras 3)
+os.environ["KERAS_BACKEND"] = "torch"
+
+# --- Monkey-patch for 'fer' library (to avoid TensorFlow requirement) ---
+try:
+    import keras
+    tf = ModuleType("tensorflow")
+    tf.keras = ModuleType("tensorflow.keras")
+    tf.keras.models = ModuleType("tensorflow.keras.models")
+    tf.keras.models.load_model = keras.models.load_model
+    sys.modules["tensorflow"] = tf
+    sys.modules["tensorflow.keras"] = tf.keras
+    sys.modules["tensorflow.keras.models"] = tf.keras.models
+except Exception as e:
+    print(f"DEBUG: Monkey-patch failed: {e}")
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
@@ -16,13 +31,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import json
-import os
 import io
+from fer import FER
 
 router = APIRouter(prefix="/emotion", tags=["emotion"])
 
-# Initialize OpenCV Face Detector (Native and very fast)
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# Initialize FER Detector
+detector = FER(mtcnn=False)
 
 # --- Custom Model Support ---
 class EmotionClassifier(nn.Module):
@@ -40,26 +55,75 @@ APP_DIR = os.path.dirname(ROUTER_DIR)
 BASE_DIR = os.path.dirname(APP_DIR)                    
 MODEL_PATH = os.path.join(APP_DIR, "models", "custom_ai")
 
+_custom_model = None
+_custom_labels = None
+_last_loaded_time = 0
+
+def load_custom_model():
+    global _custom_model, _custom_labels, _last_loaded_time
+    weights_path = os.path.join(MODEL_PATH, "custom_weights.pth")
+    labels_path = os.path.join(MODEL_PATH, "labels.json")
+    
+    if os.path.exists(weights_path) and os.path.exists(labels_path):
+        try:
+            # Check modification time
+            mtime = os.path.getmtime(weights_path)
+            if mtime <= _last_loaded_time and _custom_model is not None:
+                return # Already up to date
+
+            with open(labels_path, "r") as f:
+                _custom_labels = json.load(f)
+            
+            num_classes = len(_custom_labels)
+            _custom_model = EmotionClassifier(input_size=7, num_classes=num_classes)
+            # Use weights_only=True for security
+            _custom_model.load_state_dict(torch.load(weights_path, weights_only=True))
+            _custom_model.eval()
+            _last_loaded_time = mtime
+            print(f"DEBUG: Custom emotion model loaded (v_{int(mtime)}).")
+        except Exception as e:
+            print(f"DEBUG: Error loading custom model: {e}")
+            _custom_model = None
+            _custom_labels = None
+    else:
+        _custom_model = None
+        _custom_labels = None
+
+def get_custom_emotion(scores):
+    """
+    Refines FER base emotions using custom trained weights if available.
+    """
+    # Always try to load/reload if needed
+    load_custom_model()
+        
+    if _custom_model is not None and _custom_labels is not None:
+        try:
+            # FER returns 7 emotions: 'angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise'
+            # Sort keys to match training features order
+            features = [scores[k] for k in sorted(scores.keys())]
+            features_tensor = torch.tensor([features], dtype=torch.float32)
+            with torch.no_grad():
+                outputs = _custom_model(features_tensor)
+                _, predicted = torch.max(outputs, 1)
+                return _custom_labels[str(predicted.item())]
+        except Exception as e:
+            print(f"DEBUG: Custom model inference error: {e}")
+    
+    # Fallback to base FER emotion
+    return max(scores, key=scores.get)
+
 def get_emotion_from_frame(frame):
     """
     Detects faces in a frame and returns a predicted emotion.
-    Now uses OpenCV + PyTorch (no TensorFlow needed).
+    Uses FER + Custom PyTorch Model if available.
     """
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    
-    # If no face is found, we can't reliably predict emotion
-    if len(faces) == 0:
-        return "neutral"
-
-    # For now, let's stick with 'neutral' or use our custom model if weights exist
-    # (Since we removed FER, we can't use its 'pre-trained' weights)
-    # But we can easily add a lightweight PyTorch emotion model here!
-    
-    weights_path = os.path.join(MODEL_PATH, "custom_weights.pth")
-    if os.path.exists(weights_path):
-        # ... logic to run your custom PyTorch model ...
-        return "detected" # Placeholder
+    try:
+        results = detector.detect_emotions(frame)
+        if results:
+            scores = results[0]["emotions"]
+            return get_custom_emotion(scores)
+    except Exception as e:
+        print(f"DEBUG: FER detection error: {e}")
     
     return "neutral"
 
@@ -88,7 +152,7 @@ async def upload_emotion(
         predicted_emotion = existing_entry.corrected_emotion
     else:
         try:
-            # Native OpenCV/PyTorch Processing
+            # Process image to detect emotion
             pil_img = Image.open(io.BytesIO(content)).convert("RGB")
             img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             predicted_emotion = get_emotion_from_frame(img)
@@ -133,33 +197,6 @@ async def process_frame(
     except Exception as e:
         return {"emotion": "unknown", "error": str(e)}
 
-@router.post("/process-frame")
-async def process_frame(
-    child_id: int = Form(...),
-    frame_data: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    import base64
-    try:
-        header, encoded = frame_data.split(",", 1)
-        data = base64.b64decode(encoded)
-        nparr = np.frombuffer(data, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img is None:
-            return {"emotion": "unknown", "error": "Failed to decode image"}
-        
-        emotions = detector.detect_emotions(img)
-        if emotions:
-            scores = emotions[0]["emotions"]
-            # Use custom model logic for real-time camera too!
-            predicted_emotion = get_custom_emotion(scores)
-        else:
-            predicted_emotion = "neutral"
-            
-        return {"emotion": predicted_emotion}
-    except Exception as e:
-        return {"emotion": "unknown", "error": str(e)}
-
 @router.post("/confirm")
 def confirm_emotion(
     log_id: int = Form(...),
@@ -193,6 +230,7 @@ def get_unique_emotions(db: Session = Depends(get_db)):
 async def train_model():
     import subprocess
     import sys
+    global _custom_model, _custom_labels
     # Run the train_custom_model.py script as a subprocess
     try:
         # Need to find the absolute path to train_custom_model.py
@@ -202,6 +240,9 @@ async def train_model():
         
         result = subprocess.run([sys.executable, train_script], capture_output=True, text=True)
         if result.returncode == 0:
+            # Clear cached model to force reload
+            _custom_model = None
+            _custom_labels = None
             return {"message": "Success! AI brain retrained.", "output": result.stdout}
         else:
             # Combine stdout and stderr to catch the "FAILED:" message

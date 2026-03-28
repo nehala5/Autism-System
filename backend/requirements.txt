@@ -18,3 +18,4 @@ numpy
 moviepy<2.0.0
 psycopg2-binary
 boto3
+fer

@@ -19,11 +19,29 @@ class Child(Base):
     parent_id = Column(Integer, ForeignKey("users.id"))
     autism_inheritance = Column(String, default="") # Family history/traits
     sensory_level = Column(String, default="standard") # 'low', 'standard', 'high'
+    level = Column(Integer, default=1) # 1, 2, or 3
+    
     parent = relationship("User", back_populates="children")
     
     emotion_logs = relationship("EmotionLog", back_populates="child")
     activity_logs = relationship("ActivityLog", back_populates="child")
     quiz_results = relationship("QuizResult", back_populates="child")
+
+    def recalculate_level(self):
+        history = (self.autism_inheritance or "").lower()
+        sensory = (self.sensory_level or "").lower()
+        age = self.age or 0
+        
+        # Level 3: 10+ or ANY high-risk
+        if age >= 10 or history in ["immediate", "suspected"] or sensory == "high":
+            self.level = 3
+        # Level 2: 7–9 (or mixed) or Extended
+        elif age >= 7 or history == "extended":
+            self.level = 2
+        # Level 1: 3–6
+        else:
+            self.level = 1
+        return self.level
 
 class EmotionLog(Base):
     __tablename__ = "emotion_logs"

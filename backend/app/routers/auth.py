@@ -48,6 +48,9 @@ def add_child(child: ChildCreate, db: Session = Depends(get_db)):
         autism_inheritance=child.autism_inheritance,
         sensory_level=child.sensory_level
     )
+    # Automatically calculate level based on age, history, and sensory
+    new_child.recalculate_level()
+    
     db.add(new_child)
     db.commit()
     db.refresh(new_child)

@@ -1,8 +1,22 @@
 import os
 import sys
+from types import ModuleType
 
 # Set Keras backend to torch for Python 3.14 compatibility
 os.environ["KERAS_BACKEND"] = "torch"
+
+# --- Monkey-patch for 'fer' library (to avoid TensorFlow requirement) ---
+try:
+    import keras
+    tf = ModuleType("tensorflow")
+    tf.keras = ModuleType("tensorflow.keras")
+    tf.keras.models = ModuleType("tensorflow.keras.models")
+    tf.keras.models.load_model = keras.models.load_model
+    sys.modules["tensorflow"] = tf
+    sys.modules["tensorflow.keras"] = tf.keras
+    sys.modules["tensorflow.keras.models"] = tf.keras.models
+except Exception as e:
+    print(f"DEBUG: Monkey-patch failed: {e}")
 
 import torch
 import torch.nn as nn
@@ -90,6 +104,21 @@ def train():
     if not X:
         print("FAILED: Could not extract features from any of your corrected images.")
         sys.exit(1)
+
+    # Print summary of samples per emotion
+    print("\nTraining Data Summary:")
+    from collections import Counter
+    counts = Counter([idx_to_emotion[idx] for idx in y])
+    for emo, count in sorted(counts.items()):
+        print(f" - {emo}: {count} samples")
+    
+    # Check for missing emotions
+    missing = set(all_emotions) - set(counts.keys())
+    if missing:
+        print(f"\nWARNING: The following emotions have 0 valid samples (face detection failed): {list(missing)}")
+        print("These emotions will NOT be recognized by the custom brain. Try using clearer photos.")
+    
+    print(f"\nTotal training samples: {len(y)}\n")
 
     X = torch.tensor(X, dtype=torch.float32)
     y = torch.tensor(y, dtype=torch.long)
