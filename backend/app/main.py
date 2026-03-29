@@ -1,10 +1,31 @@
+import os
+import sys
+from types import ModuleType
+
+# Set Keras backend to torch for Python 3.11 compatibility
+os.environ["KERAS_BACKEND"] = "torch"
+
+# Monkey-patch tensorflow.keras for fer (which depends on tf.keras)
+# This allows using keras 3.x with torch backend instead of full tensorflow
+try:
+    import keras
+    tf = ModuleType("tensorflow")
+    tf.keras = ModuleType("tensorflow.keras")
+    tf.keras.models = ModuleType("tensorflow.keras.models")
+    tf.keras.models.load_model = keras.models.load_model
+    sys.modules["tensorflow"] = tf
+    sys.modules["tensorflow.keras"] = tf.keras
+    sys.modules["tensorflow.keras.models"] = tf.keras.models
+    print("Monkey-patched tensorflow.keras to use keras with torch backend.")
+except ImportError:
+    print("Warning: keras not found, monkey-patching failed.")
+
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.database import engine, Base
 from app.routers import auth, dashboard, emotion, activities, diary
-import os
 
 # Create Database Tables
 Base.metadata.create_all(bind=engine)

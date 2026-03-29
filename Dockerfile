@@ -5,6 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONPATH=/app/backend
+ENV KERAS_BACKEND=torch
 
 # Set the working directory in the container
 WORKDIR /app
