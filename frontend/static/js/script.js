@@ -1787,15 +1787,29 @@ async function loadChildrenForDashboard() {
 }
 
 function getLevelInfo(child) {
-    let level = 1;
+    console.log("getLevelInfo called with:", child);
+    let age = 0;
+
     if (typeof child === 'number') {
-        level = child;
+        age = child;
     } else if (child && typeof child === 'object') {
-        level = child.level || 1;
+        age = parseInt(child.age) || 0;
+    } else {
+        // Try getting from localStorage as fallback
+        age = parseInt(localStorage.getItem('selectedChildAge')) || 0;
     }
     
-    if (level === 3) return { level: 3, name: "Level 3: Advanced (10+ or High-Risk)", desc: "Complex emotions and mood analysis.", theme: "purple" };
-    if (level === 2) return { level: 2, name: "Level 2: Intermediate (7-9 or History)", desc: "Patterns and alphabetical logic.", theme: "sand" };
+    console.log("Determined age for level check:", age);
+
+    let level = 1;
+    if (age >= 10) level = 3;
+    else if (age >= 7) level = 2;
+    else level = 1;
+    
+    console.log("Calculated level:", level);
+
+    if (level === 3) return { level: 3, name: "Level 3: Advanced (10+)", desc: "Complex emotions and mood analysis.", theme: "purple" };
+    if (level === 2) return { level: 2, name: "Level 2: Intermediate (7-9)", desc: "Patterns and alphabetical logic.", theme: "sand" };
     return { level: 1, name: "Level 1: Basic (3-6)", desc: "Colors, shapes, and basic emotions.", theme: "orange" };
 }
 
@@ -2525,3 +2539,4 @@ window.startObjectSearch = startObjectSearch;
 window.startSpatialPuzzle = startSpatialPuzzle;
 window.startJigsawPuzzle = startJigsawPuzzle;
 window.startAdvancedPatterns = startAdvancedPatterns;
+window.getLevelInfo = getLevelInfo;

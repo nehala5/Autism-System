@@ -14,12 +14,17 @@ backend/.env
 *.db
 *.sqlite3
 backend/data/*.db
+backend/app/data/*.db
 
 # Local Uploads (S3 will handle this in cloud)
 backend/data/uploads/*
 !backend/data/uploads/.gitkeep
 backend/data/reports/*
 !backend/data/reports/.gitkeep
+backend/app/data/uploads/*
+!backend/app/data/uploads/.gitkeep
+backend/app/data/reports/*
+!backend/app/data/reports/.gitkeep
 
 # OS/IDE
 .vscode/

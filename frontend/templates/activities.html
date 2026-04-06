@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <script src="/static/js/script.js?v=1.7"></script>
+    <script src="/static/js/script.js?v=2.1"></script>
     <script>
         const GAME_TEMPLATES = {
             'color-match': `
@@ -241,6 +241,9 @@
                 });
                 return;
             }
+
+            console.log("Current age used for display:", age);
+            console.log("Level Info determined:", levelInfo);
 
             indicator.innerText = levelInfo.name;
             desc.innerText = levelInfo.desc;

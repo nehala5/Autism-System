@@ -28,15 +28,13 @@ class Child(Base):
     quiz_results = relationship("QuizResult", back_populates="child")
 
     def recalculate_level(self):
-        history = (self.autism_inheritance or "").lower()
-        sensory = (self.sensory_level or "").lower()
         age = self.age or 0
         
-        # Level 3: 10+ or ANY high-risk
-        if age >= 10 or history in ["immediate", "suspected"] or sensory == "high":
+        # Level 3: 10+
+        if age >= 10:
             self.level = 3
-        # Level 2: 7–9 (or mixed) or Extended
-        elif age >= 7 or history == "extended":
+        # Level 2: 7–9
+        elif age >= 7:
             self.level = 2
         # Level 1: 3–6
         else:
