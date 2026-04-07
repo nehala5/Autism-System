@@ -1,18 +1,40 @@
 import os
 import sys
+from types import ModuleType
 
-# Set Keras backend to torch for Python 3.11 compatibility
+# 1. SET ENVIRONMENT FIRST
 os.environ["KERAS_BACKEND"] = "torch"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3" # Suppress TF logs
 
-# Use centralized monkey-patching for 'fer' library compatibility
-try:
-    from app.utils.patching import patch_tensorflow_with_keras
-    patch_tensorflow_with_keras()
-except ImportError:
-    # If app.utils.patching is not yet in path, handle it manually or skip
-    print("Warning: could not import patch_tensorflow_with_keras")
+# 2. INLINE MONKEY-PATCH (Absolute priority)
+def _patch():
+    if "tensorflow" in sys.modules: return
+    try:
+        import keras
+        tf = ModuleType("tensorflow")
+        sys.modules["tensorflow"] = tf
+        tf.keras = keras
+        sys.modules["tensorflow.keras"] = keras
+        
+        # Essential submodules for 'fer'
+        import keras.models, keras.layers
+        sys.modules["tensorflow.keras.models"] = keras.models
+        sys.modules["tensorflow.keras.layers"] = keras.layers
+        
+        # Support for 'tensorflow.python.keras'
+        tf_py = ModuleType("tensorflow.python")
+        sys.modules["tensorflow.python"] = tf_py
+        tf_py.keras = keras
+        sys.modules["tensorflow.python.keras"] = keras
+        print("Inline monkey-patch success.")
+    except Exception as e:
+        print(f"Inline monkey-patch failed: {e}")
 
+_patch()
+
+# 3. NOW PROCEED WITH OTHER IMPORTS
 from fastapi import FastAPI, Request
+
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates

@@ -26,32 +26,49 @@ def patch_tensorflow_with_keras():
         sys.modules["tensorflow.keras"] = keras
         tf.keras = keras
         
-        # Map common submodules explicitly for libraries that use 'from tensorflow.keras.X import Y'
-        # We try-import to ensure they are available in the keras module
-        try:
-            import keras.models
-            sys.modules["tensorflow.keras.models"] = keras.models
-            tf.keras.models = keras.models
-        except ImportError: pass
+        # Create dummy python submodule
+        tf_python = ModuleType("tensorflow.python")
+        sys.modules["tensorflow.python"] = tf_python
+        tf.python = tf_python
         
-        try:
-            import keras.layers
-            sys.modules["tensorflow.keras.layers"] = keras.layers
-            tf.keras.layers = keras.layers
-        except ImportError: pass
+        # Map keras to tensorflow.python.keras
+        sys.modules["tensorflow.python.keras"] = keras
+        tf_python.keras = keras
 
-        try:
-            import keras.backend
-            sys.modules["tensorflow.keras.backend"] = keras.backend
-            tf.keras.backend = keras.backend
-        except ImportError: pass
+        # Map common submodules explicitly
+        sub_modules = [
+            "models", "layers", "backend", "utils", "callbacks", 
+            "initializers", "optimizers", "regularizers", "constraints", "activations"
+        ]
         
-        try:
-            import keras.utils
-            sys.modules["tensorflow.keras.utils"] = keras.utils
-            tf.keras.utils = keras.utils
-        except ImportError: pass
+        for sub in sub_modules:
+            try:
+                # Try to get from keras
+                module = getattr(keras, sub, None)
+                if not module:
+                    # Try to import directly
+                    import_name = f"keras.{sub}"
+                    __import__(import_name)
+                    module = sys.modules[import_name]
+                
+                if module:
+                    sys.modules[f"tensorflow.keras.{sub}"] = module
+                    sys.modules[f"tensorflow.python.keras.{sub}"] = module
+                    setattr(tf.keras, sub, module)
+                    setattr(tf.python.keras, sub, module)
+            except (ImportError, AttributeError):
+                pass
+            
+        # Add some dummy compat modules if needed
+        tf_compat = ModuleType("tensorflow.compat")
+        sys.modules["tensorflow.compat"] = tf_compat
+        tf.compat = tf_compat
+        
+        tf_v1 = ModuleType("tensorflow.compat.v1")
+        sys.modules["tensorflow.compat.v1"] = tf_v1
+        tf_compat.v1 = tf_v1
             
         print("Successfully monkey-patched tensorflow with keras.")
     except Exception as e:
         print(f"Warning: Failed to monkey-patch tensorflow with keras: {e}")
+

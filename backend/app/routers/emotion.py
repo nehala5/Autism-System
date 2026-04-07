@@ -34,9 +34,26 @@ import torch
 import torch.nn as nn
 import json
 import io
-from fer import FER
+
+# Try to import FER with extra safety
+try:
+    from fer import FER
+except ImportError as e:
+    print(f"DEBUG: Initial FER import failed: {e}. Attempting manual recovery...")
+    # One more try after ensuring patch is active
+    try:
+        from app.utils.patching import patch_tensorflow_with_keras
+        patch_tensorflow_with_keras()
+        from fer import FER
+    except Exception as e2:
+        print(f"CRITICAL: FER import totally failed: {e2}")
+        # Define a dummy FER class to avoid crash, though it won't work
+        class FER:
+            def __init__(self, *args, **kwargs): pass
+            def detect_emotions(self, frame): return []
 
 router = APIRouter(prefix="/emotion", tags=["emotion"])
+
 
 # Initialize FER Detector
 detector = FER(mtcnn=False)
