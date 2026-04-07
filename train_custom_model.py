@@ -9,14 +9,18 @@ os.environ["KERAS_BACKEND"] = "torch"
 try:
     import keras
     tf = ModuleType("tensorflow")
-    tf.keras = ModuleType("tensorflow.keras")
-    tf.keras.models = ModuleType("tensorflow.keras.models")
-    tf.keras.models.load_model = keras.models.load_model
     sys.modules["tensorflow"] = tf
-    sys.modules["tensorflow.keras"] = tf.keras
-    sys.modules["tensorflow.keras.models"] = tf.keras.models
+    sys.modules["tensorflow.keras"] = keras
+    tf.keras = keras
+    import keras.models
+    import keras.layers
+    sys.modules["tensorflow.keras.models"] = keras.models
+    sys.modules["tensorflow.keras.layers"] = keras.layers
+    tf.keras.models = keras.models
+    tf.keras.layers = keras.layers
 except Exception as e:
     print(f"DEBUG: Monkey-patch failed: {e}")
+
 
 import torch
 import torch.nn as nn

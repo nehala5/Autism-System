@@ -2,21 +2,23 @@ import os
 import sys
 from types import ModuleType
 
-# Ensure Keras backend is torch (important for Python 3.14/Keras 3)
+# Ensure Keras backend is torch
 os.environ["KERAS_BACKEND"] = "torch"
 
-# --- Monkey-patch for 'fer' library (to avoid TensorFlow requirement) ---
+# --- Centralized Monkey-patch for 'fer' library ---
 try:
-    import keras
-    tf = ModuleType("tensorflow")
-    tf.keras = ModuleType("tensorflow.keras")
-    tf.keras.models = ModuleType("tensorflow.keras.models")
-    tf.keras.models.load_model = keras.models.load_model
-    sys.modules["tensorflow"] = tf
-    sys.modules["tensorflow.keras"] = tf.keras
-    sys.modules["tensorflow.keras.models"] = tf.keras.models
-except Exception as e:
-    print(f"DEBUG: Monkey-patch failed: {e}")
+    from app.utils.patching import patch_tensorflow_with_keras
+    patch_tensorflow_with_keras()
+except ImportError:
+    # Fallback for direct script execution
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    try:
+        from app.utils.patching import patch_tensorflow_with_keras
+        patch_tensorflow_with_keras()
+    except Exception as e:
+        print(f"DEBUG: Monkey-patch import failed: {e}")
+
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session

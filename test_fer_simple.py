@@ -11,12 +11,15 @@ import numpy as np
 
 # Monkey-patch tensorflow.keras for fer
 tf = ModuleType("tensorflow")
-tf.keras = ModuleType("tensorflow.keras")
-tf.keras.models = ModuleType("tensorflow.keras.models")
-tf.keras.models.load_model = keras.models.load_model
 sys.modules["tensorflow"] = tf
-sys.modules["tensorflow.keras"] = tf.keras
-sys.modules["tensorflow.keras.models"] = tf.keras.models
+sys.modules["tensorflow.keras"] = keras
+tf.keras = keras
+import keras.models
+import keras.layers
+sys.modules["tensorflow.keras.models"] = keras.models
+sys.modules["tensorflow.keras.layers"] = keras.layers
+tf.keras.models = keras.models
+tf.keras.layers = keras.layers
 
 from fer import FER
 
