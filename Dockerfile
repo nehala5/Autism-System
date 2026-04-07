@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend /app/backend
 COPY frontend /app/frontend
 
-# Create necessary directories for runtime data (even if we move to S3 later)
+# Create necessary directories for runtime data
 RUN mkdir -p /app/backend/data/uploads/emotions \
     /app/backend/data/uploads/diary \
     /app/backend/data/reports
@@ -41,6 +41,9 @@ RUN mkdir -p /app/backend/data/uploads/emotions \
 # Expose the port (Hugging Face uses 7860 by default)
 EXPOSE 7860
 
+# Set working directory to backend for runtime
+WORKDIR /app/backend
+ENV PYTHONPATH=/app/backend
+
 # Run the application using uvicorn
-# We use 0.0.0.0 and a dynamic port to work with Hugging Face/Render/AWS
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
