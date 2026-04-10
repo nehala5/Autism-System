@@ -5,7 +5,7 @@ AI-powered autism support platform.
 ## 🔗 Live Demo
 👉 Try the interactive simulation here: [Hugging Face Space](https://huggingface.co/spaces/nehal2006/Autism_System)
 
-##🔹 Real-World Motivation
+## 🔹 Real-World Motivation
 
   Children with Autism Spectrum Disorder (ASD) often face challenges in emotional recognition, communication, and cognitive development. Traditional support   systems may lack personalization and continuous monitoring.
   
